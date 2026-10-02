@@ -1,0 +1,14 @@
+project_id         = "replace-with-gcp-project-id"
+region             = "us-central1"
+firestore_location = "us-central1"
+application_name   = "lora-training"
+environment        = "dev"
+
+# Keep empty for server-to-server uploads. Add exact HTTPS origins when a UI exists.
+upload_cors_origins = []
+
+labels = {
+  owner       = "platform-team"
+  cost-center = "ml-platform"
+}
+

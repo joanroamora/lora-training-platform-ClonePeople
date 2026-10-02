@@ -1,0 +1,30 @@
+# Terraform working directories and local state
+**/.terraform/*
+*.tfstate
+*.tfstate.*
+*.tfplan
+crash.log
+crash.*.log
+
+# Terraform variable files may contain environment-specific or sensitive data.
+*.tfvars
+*.tfvars.json
+!*.tfvars.example
+!*.tfvars.json.example
+
+# Generated backend configuration
+backend.hcl
+
+# Local tooling
+.terraformrc
+terraform.rc
+
+# Project-local toolchains and dependency environments
+.tools/
+.venv/
+node_modules/
+
+# Local environment files
+.env
+.env.*
+!.env.example
