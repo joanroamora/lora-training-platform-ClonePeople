@@ -12,6 +12,7 @@ deploy_api        = false
 api_image_uri     = ""
 trainer_image_uri = ""
 trainer_mode      = "smoke"
+training_platform = "cloud_run"
 base_model        = "stabilityai/stable-diffusion-xl-base-1.0"
 
 # Keep Cloud Run private. Use user:person@example.com or serviceAccount:name@project.iam.gserviceaccount.com.

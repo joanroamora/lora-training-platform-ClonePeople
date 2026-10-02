@@ -7,6 +7,7 @@ import type {
   TrainingJob,
   TrainingJobStatus,
 } from '../training/types.js';
+import { buildTrainerArguments } from './trainer-arguments.js';
 
 function mapVertexState(state: number | string | null | undefined): TrainingJobStatus {
   switch (state) {
@@ -54,28 +55,7 @@ export class VertexTrainingPlatform implements TrainingPlatform {
 
   public async submit(job: TrainingJob): Promise<PlatformJob> {
     const parent = `projects/${this.#config.gcpProjectId}/locations/${this.#config.gcpRegion}`;
-    const args = [
-      '--project-id',
-      this.#config.gcpProjectId,
-      '--bucket',
-      this.#config.dataBucket,
-      '--job-id',
-      job.id,
-      '--mode',
-      job.configuration.trainerMode,
-      '--base-model',
-      job.configuration.baseModel,
-      '--trigger-word',
-      job.configuration.triggerWord,
-      '--max-training-steps',
-      String(job.configuration.maxTrainingSteps),
-      '--learning-rate',
-      String(job.configuration.learningRate),
-      '--seed',
-      String(job.configuration.seed),
-      '--version',
-      job.version,
-    ];
+    const args = buildTrainerArguments(this.#config, job);
     const machineSpec =
       job.configuration.trainerMode === 'train'
         ? {

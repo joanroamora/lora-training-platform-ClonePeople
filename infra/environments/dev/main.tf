@@ -73,6 +73,7 @@ module "api" {
   max_instances         = 3
   environment_variables = {
     APP_VERSION                    = "0.2.0"
+    CLOUD_RUN_TRAINER_JOB          = module.trainer_job[0].job_name
     GCP_PROJECT_ID                 = var.project_id
     GCP_REGION                     = var.region
     GCS_DATA_BUCKET                = module.storage.bucket_name
@@ -84,6 +85,7 @@ module "api" {
     SERVICE_NAME                   = "${local.name_prefix}-api"
     SIGNED_URL_TTL_SECONDS         = "900"
     TRAINER_MODE                   = var.trainer_mode
+    TRAINING_PLATFORM              = var.training_platform
     TRAINING_SEED                  = "42"
     TRAINING_API_ENABLED           = "true"
     VERTEX_TRAINER_IMAGE_URI       = var.trainer_image_uri
@@ -93,6 +95,26 @@ module "api" {
   depends_on = [
     module.artifact_registry,
     module.firestore,
+    module.project_services,
+    module.storage,
+    module.trainer_job,
+  ]
+}
+
+module "trainer_job" {
+  count  = var.deploy_api ? 1 : 0
+  source = "../../modules/cloud-run-job"
+
+  project_id            = var.project_id
+  region                = var.region
+  job_name              = "${local.name_prefix}-trainer-smoke"
+  image_uri             = var.trainer_image_uri
+  service_account_email = module.iam.trainer_service_account_email
+  runner_members        = toset([module.iam.api_service_account_member])
+  labels                = local.common_labels
+
+  depends_on = [
+    module.artifact_registry,
     module.project_services,
     module.storage,
   ]

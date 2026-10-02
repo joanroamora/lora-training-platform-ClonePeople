@@ -160,7 +160,7 @@ export class TrainingJobService implements TrainingJobServiceContract {
       const platformJob = await this.#platform.submit(claimed);
       await this.#repository.update(jobId, {
         status: platformJob.status,
-        vertexJobName: platformJob.name,
+        platformJobName: platformJob.name,
         updatedAt: this.#clock.now().toISOString(),
       });
       return this.#getRequired(jobId);
@@ -187,9 +187,10 @@ export class TrainingJobService implements TrainingJobServiceContract {
 
   public async get(jobId: string): Promise<TrainingJob> {
     const job = await this.#getRequired(jobId);
-    if (!job.vertexJobName || isTerminalStatus(job.status)) return job;
+    const platformJobName = job.platformJobName ?? job.vertexJobName;
+    if (!platformJobName || isTerminalStatus(job.status)) return job;
 
-    const platformJob = await this.#platform.get(job.vertexJobName);
+    const platformJob = await this.#platform.get(platformJobName);
     if (platformJob.status === job.status) return job;
 
     const outputPrefix = `gs://${this.#config.dataBucket}/jobs/${job.id}/output`;

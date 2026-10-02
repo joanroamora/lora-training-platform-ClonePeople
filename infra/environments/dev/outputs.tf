@@ -27,3 +27,8 @@ output "api_service_uri" {
   description = "Authenticated Cloud Run API URL, or null when deployment is disabled."
   value       = var.deploy_api ? module.api[0].service_uri : null
 }
+
+output "trainer_smoke_job_name" {
+  description = "Cloud Run Job used for CPU smoke executions, or null when deployment is disabled."
+  value       = var.deploy_api ? module.trainer_job[0].job_name : null
+}

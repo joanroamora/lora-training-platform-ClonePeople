@@ -62,6 +62,7 @@ export const persistedTrainingJobSchema = z.object({
     seed: z.number().int().nonnegative(),
   }),
   vertexJobName: z.string().optional(),
+  platformJobName: z.string().optional(),
   error: z
     .object({
       code: z.string(),

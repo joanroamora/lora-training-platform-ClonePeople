@@ -26,7 +26,7 @@ export interface TrainingObjectStore {
 
 export interface TrainingPlatform {
   submit(job: TrainingJob): Promise<PlatformJob>;
-  get(vertexJobName: string): Promise<PlatformJob>;
+  get(platformJobName: string): Promise<PlatformJob>;
 }
 
 export interface Clock {

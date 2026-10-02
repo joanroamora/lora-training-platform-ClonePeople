@@ -91,6 +91,17 @@ variable "trainer_mode" {
   }
 }
 
+variable "training_platform" {
+  description = "Remote executor used by the API. Cloud Run supports CPU smoke tests; Vertex supports GPU training."
+  type        = string
+  default     = "vertex"
+
+  validation {
+    condition     = contains(["vertex", "cloud_run"], var.training_platform)
+    error_message = "training_platform must be vertex or cloud_run."
+  }
+}
+
 variable "api_invoker_members" {
   description = "Users or service accounts allowed to invoke the private Cloud Run API."
   type        = set(string)

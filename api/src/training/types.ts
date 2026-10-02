@@ -43,6 +43,7 @@ export type TrainingJob = Readonly<{
   updatedAt: string;
   images: readonly TrainingImage[];
   configuration: TrainingConfiguration;
+  platformJobName?: string;
   vertexJobName?: string;
   error?: Readonly<{ code: string; message: string }>;
   result?: TrainingResult;

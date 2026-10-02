@@ -13,11 +13,13 @@ const environmentSchema = z.object({
     .enum(['true', 'false'])
     .default('false')
     .transform((value) => value === 'true'),
+  TRAINING_PLATFORM: z.enum(['vertex', 'cloud_run']).default('vertex'),
   GCP_PROJECT_ID: z.string().trim().default(''),
   GCP_REGION: z.string().trim().default('us-central1'),
   GCS_DATA_BUCKET: z.string().trim().default(''),
   VERTEX_TRAINER_IMAGE_URI: z.string().trim().default(''),
   VERTEX_TRAINER_SERVICE_ACCOUNT: z.string().trim().default(''),
+  CLOUD_RUN_TRAINER_JOB: z.string().trim().default(''),
   TRAINER_MODE: z.enum(['smoke', 'train']).default('smoke'),
   LORA_BASE_MODEL: z
     .string()
@@ -36,12 +38,7 @@ const environmentSchema = z.object({
 }).superRefine((value, context) => {
   if (!value.TRAINING_API_ENABLED) return;
 
-  const requiredFields = [
-    'GCP_PROJECT_ID',
-    'GCS_DATA_BUCKET',
-    'VERTEX_TRAINER_IMAGE_URI',
-    'VERTEX_TRAINER_SERVICE_ACCOUNT',
-  ] as const;
+  const requiredFields = ['GCP_PROJECT_ID', 'GCS_DATA_BUCKET'] as const;
   for (const field of requiredFields) {
     if (value[field].length === 0) {
       context.addIssue({
@@ -50,6 +47,19 @@ const environmentSchema = z.object({
         message: 'is required when TRAINING_API_ENABLED=true',
       });
     }
+  }
+  if (value.TRAINING_PLATFORM === 'vertex') {
+    for (const field of ['VERTEX_TRAINER_IMAGE_URI', 'VERTEX_TRAINER_SERVICE_ACCOUNT'] as const) {
+      if (value[field].length === 0) {
+        context.addIssue({ code: 'custom', path: [field], message: 'is required for Vertex AI' });
+      }
+    }
+  } else if (value.CLOUD_RUN_TRAINER_JOB.length === 0) {
+    context.addIssue({
+      code: 'custom',
+      path: ['CLOUD_RUN_TRAINER_JOB'],
+      message: 'is required for Cloud Run Jobs',
+    });
   }
 });
 
@@ -61,11 +71,13 @@ export type AppConfig = Readonly<{
   appVersion: string;
   requestBodyLimit: string;
   trainingApiEnabled: boolean;
+  trainingPlatform: 'vertex' | 'cloud_run';
   gcpProjectId: string;
   gcpRegion: string;
   dataBucket: string;
   trainerImageUri: string;
   trainerServiceAccount: string;
+  cloudRunTrainerJob: string;
   trainerMode: 'smoke' | 'train';
   baseModel: string;
   signedUrlTtlSeconds: number;
@@ -95,11 +107,13 @@ export function loadConfig(
     appVersion: parsed.data.APP_VERSION,
     requestBodyLimit: parsed.data.REQUEST_BODY_LIMIT,
     trainingApiEnabled: parsed.data.TRAINING_API_ENABLED,
+    trainingPlatform: parsed.data.TRAINING_PLATFORM,
     gcpProjectId: parsed.data.GCP_PROJECT_ID,
     gcpRegion: parsed.data.GCP_REGION,
     dataBucket: parsed.data.GCS_DATA_BUCKET,
     trainerImageUri: parsed.data.VERTEX_TRAINER_IMAGE_URI,
     trainerServiceAccount: parsed.data.VERTEX_TRAINER_SERVICE_ACCOUNT,
+    cloudRunTrainerJob: parsed.data.CLOUD_RUN_TRAINER_JOB,
     trainerMode: parsed.data.TRAINER_MODE,
     baseModel: parsed.data.LORA_BASE_MODEL,
     signedUrlTtlSeconds: parsed.data.SIGNED_URL_TTL_SECONDS,
