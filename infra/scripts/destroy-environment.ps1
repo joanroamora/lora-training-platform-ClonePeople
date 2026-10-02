@@ -35,21 +35,21 @@ if ($confirmation -cne $Environment) {
   throw 'Confirmation did not match. No resources were changed.'
 }
 
-& $terraformCommand -chdir=$environmentRoot init -input=false -backend-config=backend.hcl
+& $terraformCommand "-chdir=$environmentRoot" init "-input=false" "-backend-config=backend.hcl"
 if ($LASTEXITCODE -ne 0) { throw 'Terraform initialization failed.' }
 
-& $terraformCommand -chdir=$environmentRoot plan -destroy -input=false -out=$destroyPlan
+& $terraformCommand "-chdir=$environmentRoot" plan -destroy "-input=false" "-out=$destroyPlan"
 if ($LASTEXITCODE -ne 0) { throw 'Terraform could not create the destroy plan.' }
 
-& $terraformCommand -chdir=$environmentRoot show $destroyPlan
+& $terraformCommand "-chdir=$environmentRoot" show $destroyPlan
 if ($LASTEXITCODE -ne 0) { throw 'Terraform could not display the destroy plan.' }
 
 if ($PSCmdlet.ShouldProcess($Environment, 'Apply the saved Terraform destroy plan')) {
-  & $terraformCommand -chdir=$environmentRoot apply -input=false -auto-approve $destroyPlan
+  & $terraformCommand "-chdir=$environmentRoot" apply "-input=false" -auto-approve $destroyPlan
   if ($LASTEXITCODE -ne 0) { throw 'Environment destroy failed; bootstrap was preserved.' }
 }
 
-$remainingResources = & $terraformCommand -chdir=$environmentRoot state list
+$remainingResources = & $terraformCommand "-chdir=$environmentRoot" state list
 if ($LASTEXITCODE -ne 0) { throw 'Could not verify the environment state.' }
 if ($remainingResources) {
   throw 'Resources remain in environment state; bootstrap was preserved.'
@@ -61,19 +61,19 @@ if ($IncludeBootstrap) {
   }
 
   if ($PSCmdlet.ShouldProcess('Terraform bootstrap', 'Destroy the remote-state bucket and all state versions')) {
-    & $terraformCommand -chdir=$bootstrapRoot init -input=false
+    & $terraformCommand "-chdir=$bootstrapRoot" init "-input=false"
     if ($LASTEXITCODE -ne 0) { throw 'Bootstrap initialization failed.' }
 
-    & $terraformCommand -chdir=$bootstrapRoot plan -destroy -input=false -out=$bootstrapDestroyPlan
+    & $terraformCommand "-chdir=$bootstrapRoot" plan -destroy "-input=false" "-out=$bootstrapDestroyPlan"
     if ($LASTEXITCODE -ne 0) { throw 'Terraform could not create the bootstrap destroy plan.' }
 
-    & $terraformCommand -chdir=$bootstrapRoot show $bootstrapDestroyPlan
+    & $terraformCommand "-chdir=$bootstrapRoot" show $bootstrapDestroyPlan
     if ($LASTEXITCODE -ne 0) { throw 'Terraform could not display the bootstrap destroy plan.' }
 
-    & $terraformCommand -chdir=$bootstrapRoot apply -input=false -auto-approve $bootstrapDestroyPlan
+    & $terraformCommand "-chdir=$bootstrapRoot" apply "-input=false" -auto-approve $bootstrapDestroyPlan
     if ($LASTEXITCODE -ne 0) { throw 'Bootstrap destroy failed.' }
 
-    $remainingBootstrapResources = & $terraformCommand -chdir=$bootstrapRoot state list
+    $remainingBootstrapResources = & $terraformCommand "-chdir=$bootstrapRoot" state list
     if ($LASTEXITCODE -ne 0) { throw 'Could not verify the bootstrap state.' }
     if ($remainingBootstrapResources) {
       throw 'Resources remain in bootstrap state.'
