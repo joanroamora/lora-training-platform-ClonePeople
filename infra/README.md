@@ -14,6 +14,8 @@ infra/
 
 The bootstrap stack keeps local Terraform state. This avoids a state bucket depending on itself and makes a complete teardown possible: destroy the environment first, then destroy the bootstrap stack and its bucket. Never commit either state file.
 
+The development root can be applied before container images exist. Leave `deploy_api = false` to create the foundation, publish the API and trainer images to the resulting Artifact Registry repository, then set the two immutable image URIs and enable the private Cloud Run service. See `docs/remote-smoke-test.md` for the first end-to-end test.
+
 ## Configuration model
 
 Configuration has three layers:

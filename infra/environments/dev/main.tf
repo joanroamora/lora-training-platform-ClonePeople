@@ -57,3 +57,43 @@ module "artifact_registry" {
 
   depends_on = [module.project_services]
 }
+
+module "api" {
+  count  = var.deploy_api ? 1 : 0
+  source = "../../modules/cloud-run"
+
+  project_id            = var.project_id
+  region                = var.region
+  service_name          = "${local.name_prefix}-api"
+  image_uri             = var.api_image_uri
+  service_account_email = module.iam.api_service_account_email
+  invoker_members       = var.api_invoker_members
+  labels                = local.common_labels
+  min_instances         = 0
+  max_instances         = 3
+  environment_variables = {
+    APP_VERSION                    = "0.2.0"
+    GCP_PROJECT_ID                 = var.project_id
+    GCP_REGION                     = var.region
+    GCS_DATA_BUCKET                = module.storage.bucket_name
+    LOG_LEVEL                      = "info"
+    LORA_BASE_MODEL                = var.base_model
+    MAX_IMAGE_BYTES                = "15728640"
+    MAX_TRAINING_STEPS             = "800"
+    NODE_ENV                       = "production"
+    SERVICE_NAME                   = "${local.name_prefix}-api"
+    SIGNED_URL_TTL_SECONDS         = "900"
+    TRAINER_MODE                   = var.trainer_mode
+    TRAINING_SEED                  = "42"
+    TRAINING_API_ENABLED           = "true"
+    VERTEX_TRAINER_IMAGE_URI       = var.trainer_image_uri
+    VERTEX_TRAINER_SERVICE_ACCOUNT = module.iam.trainer_service_account_email
+  }
+
+  depends_on = [
+    module.artifact_registry,
+    module.firestore,
+    module.project_services,
+    module.storage,
+  ]
+}

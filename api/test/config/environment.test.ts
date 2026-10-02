@@ -11,7 +11,7 @@ describe('loadConfig', () => {
       port: 8080,
       logLevel: 'info',
       serviceName: 'lora-training-api',
-      appVersion: '0.1.0',
+      appVersion: '0.2.0',
       requestBodyLimit: '1mb',
     });
   });

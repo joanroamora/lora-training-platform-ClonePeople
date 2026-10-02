@@ -2,11 +2,15 @@ import { createServer } from 'node:http';
 
 import { createApp } from './app.js';
 import { loadConfig } from './config/environment.js';
+import { createGcpTrainingService } from './gcp/create-training-service.js';
 import { createLogger } from './observability/logger.js';
 
 const config = loadConfig();
 const logger = createLogger(config);
-const app = createApp({ config, logger });
+const trainingService = config.trainingApiEnabled
+  ? createGcpTrainingService(config)
+  : undefined;
+const app = createApp({ config, logger, ...(trainingService ? { trainingService } : {}) });
 const server = createServer(app);
 
 server.listen(config.port, '0.0.0.0', () => {

@@ -7,8 +7,50 @@ const environmentSchema = z.object({
     .enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent'])
     .default('info'),
   SERVICE_NAME: z.string().trim().min(1).max(63).default('lora-training-api'),
-  APP_VERSION: z.string().trim().min(1).max(64).default('0.1.0'),
+  APP_VERSION: z.string().trim().min(1).max(64).default('0.2.0'),
   REQUEST_BODY_LIMIT: z.string().trim().min(1).max(16).default('1mb'),
+  TRAINING_API_ENABLED: z
+    .enum(['true', 'false'])
+    .default('false')
+    .transform((value) => value === 'true'),
+  GCP_PROJECT_ID: z.string().trim().default(''),
+  GCP_REGION: z.string().trim().default('us-central1'),
+  GCS_DATA_BUCKET: z.string().trim().default(''),
+  VERTEX_TRAINER_IMAGE_URI: z.string().trim().default(''),
+  VERTEX_TRAINER_SERVICE_ACCOUNT: z.string().trim().default(''),
+  TRAINER_MODE: z.enum(['smoke', 'train']).default('smoke'),
+  LORA_BASE_MODEL: z
+    .string()
+    .trim()
+    .default('stabilityai/stable-diffusion-xl-base-1.0'),
+  SIGNED_URL_TTL_SECONDS: z.coerce.number().int().min(60).max(3600).default(900),
+  MAX_IMAGE_BYTES: z.coerce
+    .number()
+    .int()
+    .min(1_048_576)
+    .max(52_428_800)
+    .default(15_728_640),
+  MAX_TRAINING_STEPS: z.coerce.number().int().min(1).max(10_000).default(800),
+  LEARNING_RATE: z.coerce.number().positive().max(0.01).default(0.0001),
+  TRAINING_SEED: z.coerce.number().int().min(0).max(2_147_483_647).default(42),
+}).superRefine((value, context) => {
+  if (!value.TRAINING_API_ENABLED) return;
+
+  const requiredFields = [
+    'GCP_PROJECT_ID',
+    'GCS_DATA_BUCKET',
+    'VERTEX_TRAINER_IMAGE_URI',
+    'VERTEX_TRAINER_SERVICE_ACCOUNT',
+  ] as const;
+  for (const field of requiredFields) {
+    if (value[field].length === 0) {
+      context.addIssue({
+        code: 'custom',
+        path: [field],
+        message: 'is required when TRAINING_API_ENABLED=true',
+      });
+    }
+  }
 });
 
 export type AppConfig = Readonly<{
@@ -18,6 +60,19 @@ export type AppConfig = Readonly<{
   serviceName: string;
   appVersion: string;
   requestBodyLimit: string;
+  trainingApiEnabled: boolean;
+  gcpProjectId: string;
+  gcpRegion: string;
+  dataBucket: string;
+  trainerImageUri: string;
+  trainerServiceAccount: string;
+  trainerMode: 'smoke' | 'train';
+  baseModel: string;
+  signedUrlTtlSeconds: number;
+  maxImageBytes: number;
+  maxTrainingSteps: number;
+  learningRate: number;
+  trainingSeed: number;
 }>;
 
 export function loadConfig(
@@ -39,5 +94,18 @@ export function loadConfig(
     serviceName: parsed.data.SERVICE_NAME,
     appVersion: parsed.data.APP_VERSION,
     requestBodyLimit: parsed.data.REQUEST_BODY_LIMIT,
+    trainingApiEnabled: parsed.data.TRAINING_API_ENABLED,
+    gcpProjectId: parsed.data.GCP_PROJECT_ID,
+    gcpRegion: parsed.data.GCP_REGION,
+    dataBucket: parsed.data.GCS_DATA_BUCKET,
+    trainerImageUri: parsed.data.VERTEX_TRAINER_IMAGE_URI,
+    trainerServiceAccount: parsed.data.VERTEX_TRAINER_SERVICE_ACCOUNT,
+    trainerMode: parsed.data.TRAINER_MODE,
+    baseModel: parsed.data.LORA_BASE_MODEL,
+    signedUrlTtlSeconds: parsed.data.SIGNED_URL_TTL_SECONDS,
+    maxImageBytes: parsed.data.MAX_IMAGE_BYTES,
+    maxTrainingSteps: parsed.data.MAX_TRAINING_STEPS,
+    learningRate: parsed.data.LEARNING_RATE,
+    trainingSeed: parsed.data.TRAINING_SEED,
   });
 }

@@ -23,3 +23,7 @@ output "trainer_service_account_email" {
   value       = module.iam.trainer_service_account_email
 }
 
+output "api_service_uri" {
+  description = "Authenticated Cloud Run API URL, or null when deployment is disabled."
+  value       = var.deploy_api ? module.api[0].service_uri : null
+}

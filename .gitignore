@@ -25,6 +25,9 @@ terraform.rc
 node_modules/
 dist/
 coverage/
+__pycache__/
+*.py[cod]
+.pytest_cache/
 
 # Local environment files
 .env

@@ -61,3 +61,51 @@ variable "upload_cors_origins" {
   type        = list(string)
   default     = []
 }
+
+variable "deploy_api" {
+  description = "Create Cloud Run after API and trainer images exist in Artifact Registry."
+  type        = bool
+  default     = false
+}
+
+variable "api_image_uri" {
+  description = "API image URI. Prefer an immutable sha256 digest."
+  type        = string
+  default     = ""
+}
+
+variable "trainer_image_uri" {
+  description = "Vertex AI trainer image URI. Prefer an immutable sha256 digest."
+  type        = string
+  default     = ""
+}
+
+variable "trainer_mode" {
+  description = "Use smoke for the first integration test and train for GPU LoRA training."
+  type        = string
+  default     = "smoke"
+
+  validation {
+    condition     = contains(["smoke", "train"], var.trainer_mode)
+    error_message = "trainer_mode must be smoke or train."
+  }
+}
+
+variable "api_invoker_members" {
+  description = "Users or service accounts allowed to invoke the private Cloud Run API."
+  type        = set(string)
+  default     = []
+}
+
+variable "base_model" {
+  description = "Hugging Face model identifier used for compatible LoRA training."
+  type        = string
+  default     = "stabilityai/stable-diffusion-xl-base-1.0"
+}
+
+check "container_images_present" {
+  assert {
+    condition     = !var.deploy_api || (length(var.api_image_uri) > 0 && length(var.trainer_image_uri) > 0)
+    error_message = "api_image_uri and trainer_image_uri are required when deploy_api is true."
+  }
+}
