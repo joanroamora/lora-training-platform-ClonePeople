@@ -68,15 +68,34 @@ $created = Invoke-RestMethod `
   -ContentType 'application/json' `
   -Body $createBody
 
-for ($index = 0; $index -lt $created.uploads.Count; $index++) {
-  $upload = $created.uploads[$index]
-  $image = $images[$index]
-  Invoke-WebRequest `
-    -Method Put `
-    -Uri $upload.uploadUrl `
-    -ContentType $upload.contentType `
-    -InFile $image.localPath | Out-Null
-  Write-Host "Uploaded $($image.fileName)"
+Add-Type -AssemblyName System.Net.Http
+$httpClient = [System.Net.Http.HttpClient]::new()
+try {
+  for ($index = 0; $index -lt $created.uploads.Count; $index++) {
+    $upload = $created.uploads[$index]
+    $image = $images[$index]
+    $content = [System.Net.Http.ByteArrayContent]::new(
+      [System.IO.File]::ReadAllBytes($image.localPath)
+    )
+    try {
+      $content.Headers.ContentType = [System.Net.Http.Headers.MediaTypeHeaderValue]::new(
+        [string]$upload.contentType
+      )
+      $uploadResponse = $httpClient.PutAsync(
+        [string]$upload.uploadUrl,
+        $content
+      ).GetAwaiter().GetResult()
+      if (-not $uploadResponse.IsSuccessStatusCode) {
+        $responseBody = $uploadResponse.Content.ReadAsStringAsync().GetAwaiter().GetResult()
+        throw "Upload failed with HTTP $([int]$uploadResponse.StatusCode): $responseBody"
+      }
+    } finally {
+      $content.Dispose()
+    }
+    Write-Host "Uploaded $($image.fileName)"
+  }
+} finally {
+  $httpClient.Dispose()
 }
 
 $jobId = $created.job.id

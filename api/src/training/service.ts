@@ -32,6 +32,15 @@ function versionName(subjectName: string, jobId: string): string {
   return `${slug}-${jobId.slice(0, 8)}`;
 }
 
+function isVertexQuotaError(error: unknown): boolean {
+  return (
+    error instanceof Error &&
+    (('code' in error && error.code === 8) ||
+      error.message.includes('RESOURCE_EXHAUSTED') ||
+      error.message.includes('exceed quota limits'))
+  );
+}
+
 type TrainingServiceDependencies = Readonly<{
   config: AppConfig;
   repository: TrainingJobRepository;
@@ -156,14 +165,22 @@ export class TrainingJobService implements TrainingJobServiceContract {
       });
       return this.#getRequired(jobId);
     } catch (error) {
+      const quotaExhausted = isVertexQuotaError(error);
       await this.#repository.update(jobId, {
         status: 'FAILED',
         updatedAt: this.#clock.now().toISOString(),
         error: {
-          code: 'VERTEX_SUBMISSION_FAILED',
+          code: quotaExhausted ? 'VERTEX_QUOTA_EXHAUSTED' : 'VERTEX_SUBMISSION_FAILED',
           message: error instanceof Error ? error.message : 'Vertex AI rejected the job',
         },
       });
+      if (quotaExhausted) {
+        throw new HttpError(
+          503,
+          'VERTEX_QUOTA_EXHAUSTED',
+          'Vertex AI training quota is unavailable for this project or region',
+        );
+      }
       throw error;
     }
   }

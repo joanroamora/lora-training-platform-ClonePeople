@@ -145,4 +145,28 @@ describe('TrainingJobService', () => {
       metadataUri: `gs://test-bucket/jobs/${job.id}/output/metadata.json`,
     });
   });
+
+  it('reports exhausted Vertex quota without leaving the job in SUBMITTING', async () => {
+    const { service, repository, objectStore, platform } = createFixture();
+    const { job } = await service.create(input);
+    for (const image of job.images) {
+      objectStore.metadata.set(image.objectName, {
+        sizeBytes: image.declaredSizeBytes,
+        contentType: image.contentType,
+      });
+    }
+    platform.submit = () =>
+      Promise.reject(
+        Object.assign(new Error('8 RESOURCE_EXHAUSTED: quota limits exceeded'), { code: 8 }),
+      );
+
+    await expect(service.start(job.id)).rejects.toMatchObject({
+      statusCode: 503,
+      code: 'VERTEX_QUOTA_EXHAUSTED',
+    });
+    expect(repository.job).toMatchObject({
+      status: 'FAILED',
+      error: { code: 'VERTEX_QUOTA_EXHAUSTED' },
+    });
+  });
 });
