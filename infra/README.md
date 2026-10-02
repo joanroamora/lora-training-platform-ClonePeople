@@ -43,9 +43,9 @@ terraform -chdir=infra/environments/dev plan
 
 The GCP project must already exist, billing must be enabled, and `serviceusage.googleapis.com` must be available so Terraform can manage the remaining APIs. Project creation, billing attachment, and this bootstrap prerequisite are organization-specific operations, so they are deliberately outside this stack. The bootstrap stack owns the Storage API and keeps it active until both the workload data bucket and the remote-state bucket have been removed.
 
-## Local tooling policy
+## Tooling policy
 
-Do not install project tools globally. A portable Terraform binary may be placed at `.tools/terraform/terraform.exe`; lifecycle scripts prefer that location. If Terraform is already available on `PATH`, the scripts may use it as a fallback, but they never install or upgrade it. Future Python work belongs in `.venv`, and Node.js packages belong in the repository's local `node_modules` through the package manager and lockfile.
+Terraform uses the existing system installation; lifecycle scripts resolve it from `PATH` or the standard per-user installation under `%LOCALAPPDATA%\Programs\Terraform`. They never install or upgrade Terraform. Python work belongs in `.venv` or a container, and Node.js packages belong in the repository's local `node_modules` through the package manager and lockfile.
 
 ## Complete teardown
 

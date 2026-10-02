@@ -19,8 +19,7 @@ backend.hcl
 .terraformrc
 terraform.rc
 
-# Project-local toolchains and dependency environments
-.tools/
+# Project-local dependency environments
 .venv/
 node_modules/
 dist/

@@ -15,16 +15,14 @@ $environmentRoot = Join-Path $repoRoot "infra\environments\$Environment"
 $bootstrapRoot = Join-Path $repoRoot 'infra\bootstrap'
 $destroyPlan = Join-Path $environmentRoot 'destroy.tfplan'
 $bootstrapDestroyPlan = Join-Path $bootstrapRoot 'destroy.tfplan'
-$localTerraform = Join-Path $repoRoot '.tools\terraform\terraform.exe'
+$terraformUserInstall = Join-Path $env:LOCALAPPDATA 'Programs\Terraform\terraform.exe'
 
-if (Test-Path -LiteralPath $localTerraform) {
-  $terraformCommand = $localTerraform
+if (Get-Command terraform -ErrorAction SilentlyContinue) {
+  $terraformCommand = (Get-Command terraform).Source
+} elseif (Test-Path -LiteralPath $terraformUserInstall) {
+  $terraformCommand = $terraformUserInstall
 } else {
-  $terraformOnPath = Get-Command terraform -ErrorAction SilentlyContinue
-  if (-not $terraformOnPath) {
-    throw 'Terraform was not found at .tools\terraform\terraform.exe or on PATH.'
-  }
-  $terraformCommand = $terraformOnPath.Source
+  throw 'Terraform was not found on PATH or in the standard per-user installation.'
 }
 
 if (-not (Test-Path -LiteralPath (Join-Path $environmentRoot 'backend.hcl'))) {
