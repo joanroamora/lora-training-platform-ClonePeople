@@ -23,6 +23,8 @@ terraform.rc
 .tools/
 .venv/
 node_modules/
+dist/
+coverage/
 
 # Local environment files
 .env
