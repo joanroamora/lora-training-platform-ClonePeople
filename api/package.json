@@ -1,0 +1,47 @@
+{
+  "name": "@lora-training/api",
+  "version": "0.2.0",
+  "private": true,
+  "description": "Cloud Run orchestration API for the LoRA training platform",
+  "type": "module",
+  "engines": {
+    "node": ">=24 <25"
+  },
+  "overrides": {
+    "uuid": "11.1.1"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "dev": "node --env-file-if-exists=.env --import tsx --watch src/server.ts",
+    "lint": "eslint .",
+    "start": "node dist/server.js",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@google-cloud/aiplatform": "7.4.1",
+    "@google-cloud/firestore": "9.3.1",
+    "@google-cloud/storage": "8.2.0",
+    "express": "5.2.1",
+    "google-auth-library": "9.15.1",
+    "helmet": "8.3.0",
+    "pino": "10.3.1",
+    "pino-http": "11.0.0",
+    "zod": "4.6.5"
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "@types/express": "5.0.6",
+    "@types/node": "26.6.4",
+    "@types/supertest": "7.2.1",
+    "@vitest/coverage-v8": "5.0.3",
+    "eslint": "10.11.0",
+    "globals": "17.13.0",
+    "supertest": "7.3.0",
+    "tsx": "4.23.15",
+    "typescript": "6.0.3",
+    "typescript-eslint": "8.71.0",
+    "vitest": "5.0.3"
+  }
+}

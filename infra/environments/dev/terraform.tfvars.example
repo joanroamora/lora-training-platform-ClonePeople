@@ -1,0 +1,24 @@
+project_id         = "replace-with-gcp-project-id"
+region             = "us-central1"
+firestore_location = "us-central1"
+application_name   = "lora-training"
+environment        = "dev"
+
+# Keep empty for server-to-server uploads. Add exact HTTPS origins when a UI exists.
+upload_cors_origins = []
+
+# Enable only after both images have been pushed to Artifact Registry.
+deploy_api        = false
+api_image_uri     = ""
+trainer_image_uri = ""
+trainer_mode      = "smoke"
+training_platform = "cloud_run"
+base_model        = "stabilityai/stable-diffusion-xl-base-1.0"
+
+# Keep Cloud Run private. Use user:person@example.com or serviceAccount:name@project.iam.gserviceaccount.com.
+api_invoker_members = []
+
+labels = {
+  owner       = "platform-team"
+  cost-center = "ml-platform"
+}

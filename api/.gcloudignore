@@ -1,0 +1,10 @@
+.gcloudignore
+.git
+.gitignore
+.env
+.env.*
+!.env.example
+coverage
+dist
+node_modules
+npm-debug.log*
