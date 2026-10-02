@@ -38,7 +38,7 @@ resource "google_storage_bucket" "workload" {
 
   lifecycle_rule {
     condition {
-      age     = 1
+      age            = 1
       matches_prefix = ["tmp/"]
     }
     action {
