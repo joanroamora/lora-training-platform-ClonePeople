@@ -1,4 +1,4 @@
-# Vertex AI LoRA trainer
+# LoRA trainer
 
 This container reads job images from Cloud Storage, decodes and normalizes them, optionally trains an SDXL UNet LoRA, and writes `metadata.json` plus `pytorch_lora_weights.safetensors` to the job output prefix.
 
