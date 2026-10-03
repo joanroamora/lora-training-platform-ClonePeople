@@ -1,6 +1,6 @@
 # Infrastructure as Code
 
-This directory contains the Google Cloud foundation for the LoRA training platform. It intentionally stops before deploying Cloud Run or a Vertex AI custom job: those resources need application container images and belong to the next delivery stage.
+This directory contains the Google Cloud foundation, private API, and CPU smoke runner for the LoRA training platform. The API can submit smoke work to Cloud Run Jobs or GPU training work to Vertex AI after the required quota is available.
 
 ## Layout
 

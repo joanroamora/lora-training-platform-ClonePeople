@@ -1,6 +1,6 @@
 # LoRA Training API
 
-Node.js and Express orchestration API intended for Cloud Run. It exposes health and training-job endpoints backed by Firestore, private Cloud Storage uploads, and Vertex AI Custom Training.
+Node.js and Express orchestration API intended for Cloud Run. It exposes health and training-job endpoints backed by Firestore, private Cloud Storage uploads, and a selectable Cloud Run Jobs or Vertex AI runner.
 
 ## Local development
 
@@ -33,7 +33,7 @@ Configuration is validated at startup. Logs are emitted as JSON, common authoriz
 Training endpoints are enabled only when `TRAINING_API_ENABLED=true` and all GCP configuration is present:
 
 - `POST /v1/training-jobs` accepts subject metadata and 4-30 image declarations, persists a job, and returns short-lived signed upload URLs.
-- `POST /v1/training-jobs/{jobId}/start` verifies every private object and submits one idempotent Vertex AI custom job.
-- `GET /v1/training-jobs/{jobId}` synchronizes Vertex state and returns private output locations after completion.
+- `POST /v1/training-jobs/{jobId}/start` verifies every private object and submits one idempotent remote job.
+- `GET /v1/training-jobs/{jobId}` synchronizes the remote state and returns private output locations after completion.
 
 Cloud Run provides authentication at the service boundary. The application does not accept or store passwords, service-account keys, or long-lived access tokens.
